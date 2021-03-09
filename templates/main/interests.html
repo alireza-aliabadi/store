@@ -1,0 +1,94 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block title %} User-Interest {% endblock %}
+{% block content %}
+    <div class="container d-flex mt-2 mb-2 h-100">
+        <div class="col-9 row w-100 ">
+            <div class="col-lg-12 bg-light rounded" style="width: 500px">
+                <div class="table-main table-responsive mt-3 ">
+                    <table class="table">
+                        <tbody class="d-flex">
+                            {% for product in products %}
+                                <tr class="col-lg-6 col-sm-12 rounded" style="border-right: 2px solid blueviolet">
+                                    <td class="thumbnail-img">
+                                        <a href="#">
+                                            <img class="img-fluid" src="{{ product.image.url }}" alt="" width="48" height="57.59"/>
+                                        </a>
+                                    </td>
+                                    <td class="name-pr">
+                                        <a href="{% url "product_detail" product.id %}">
+                                            {{ product.name }}
+                                        </a>
+                                    </td>
+                                    <td class="remove-pr">
+                                        <a href="#" onclick="delete_item({{ product.id }})">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-3 bg-info ml-3 text-center h-100 rounded" id="user_menu">
+            {% if user.image %}
+                <img src="{{ user.image.url }}" alt="user picture" style="width: 130px; height: 130px;" class="rounded-circle mt-3" id="added_image">
+            {% endif %}
+
+            <form method="post" id="change-image" enctype="multipart/form-data">
+                <input type="file" class="bg-white mt-2 col-sm-12" id="user_image" name="user_image">
+                <button type="submit" class="mt-2 btn-warning">change</button>
+            </form>
+
+
+            <div class="rounded mt-4 mb-5 text-center shadow d-flex flex-column" style="background-color: lightgoldenrodyellow">
+                <a href="{% url "user-interests" %}" class="p-2 mt-2 btn-outline-primary border-0 ">Interests</a>
+                <a href="{% url "user_orders" %}" class="p-2 mt-2 btn-outline-primary border-0 ">Orders</a>
+                {% if user.is_staff %}
+                    <a href="{% url "user_shop_page" shop_name %}" class="p-2 mt-2 btn-outline-primary border-0 ">Shop</a>
+                {% endif %}
+                <a href="{% url "address" %}" class="p-2 mt-2 btn-outline-primary border-0 ">Addresses</a>
+                <a href="{% url "profile" user.id %}" class="p-2 mt-2 btn-outline-primary border-0 ">Information</a>
+                <a href="{% url "logout" %}" class="p-2 mt-2 mb-2 btn-outline-primary border-0 ">Logout</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block script %}
+    <script>
+        $(`#change-image`).submit(
+            function (e){
+                e.preventDefault();
+                let a = new FormData(this)
+                $.ajax({
+                    type: "post",
+                    url: "{% url "change_image" %}",
+                    data: a,
+                    success: (response)=>{
+                        let resp = JSON.parse(response)
+                        console.log(resp)
+                        $(`#added_image`).remove()
+                        $(`#user_menu`).prepend(`<img src="${resp['image']}" alt="user picture" style="width: 130px; height: 130px;" class="rounded-circle mt-3" id="added_image">`)
+                    },
+                    contentType: false,
+                    processData: false
+                })
+            }
+        )
+        function delete_item(productid){
+            let data = JSON.stringify({'product_id': productid})
+            $.ajax({
+                type: "post",
+                url:"{% url "delete_interest" %}",
+                data: data,
+                success: (response)=>{
+                    mssg = JSON.parse(response)
+                    $(`#basket_item`).remove()
+                    alert(mssg['mssg'])
+                }
+            })
+        }
+    </script>
+{% endblock %}

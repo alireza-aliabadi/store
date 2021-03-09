@@ -1,0 +1,277 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block title %}Product-list{% endblock %}
+{% block content %}
+    <div class="d-flex container mt-2 mb-2">
+        <div class="col-10 bg-light pt-2 pb-2 mr-2 rounded">
+            <div class="text-right d-flex">
+                <button class="rounded shadow border-0 btn-outline-primary " style="width: fit-content; height: fit-content;" onclick="filter('', '','price_a')">Price Ascending</button>
+                <button class="rounded shadow border-0 btn-outline-primary " style="width: fit-content; height: fit-content;" onclick="filter('', '','price_d')">Price Descending</button>
+                <form method="get" action="{% url 'search' %}">
+                    {% if request.GET.q %}
+                        <input type="hidden" name="q" value="{{ request.GET.q}}">
+                    {% endif %}
+                    {% if request.GET.brandfilter %}
+                        <input type="hidden" name="brandfilter" value="{{ request.GET.brandfilter }}">
+                    {% endif %}
+                    {% if request.GET.categoryfilter %}
+                        <input type="hidden" name="categoryfilter" value="{{ request.GET.categoryfilter }}">
+                    {% endif %}
+                        <input type="hidden" name="latest" value="True">
+                    <button class="rounded shadow border-0 btn-outline-primary " style="width: fit-content; height: fit-content;" onclick="this.form.submit()">latest</button>
+                </form>
+            </div><br>
+            <div>
+                <div class="pl-4 row" id="products">
+                    {% for product in products %}
+                        <div class="col-3 rounded m-2 border-top border-danger ">
+                            <div class="products-single pt-2">
+                                <div class="box-img-hover">
+                                    <img src="{{ product.image.url }}" class="img-fluid" alt="Image">
+                                    <div class="mask-icon">
+                                        <ul>
+                                            <li><a href="{% url "product_detail" product.id %}" data-toggle="tooltip" data-placement="right" title="View"><i class="fas fa-eye"></i></a></li>
+                                            <li><a href="#" data-toggle="tooltip" data-placement="right" title="Compare"><i class="fas fa-sync-alt"></i></a></li>
+                                            <li><a href="#" data-toggle="tooltip" data-placement="right" title="Add to Wishlist"><i class="far fa-heart"></i></a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="why-text">
+                                    <h4>{{ product.name }}</h4>
+                                    {% if product.min_price %}
+                                        <div class="type-lb pt-2">
+                                            <p class="sale">Sale</p>
+                                        </div>
+                                        <h3>{{ product.min_price }}</h3>
+                                    {% else %}
+                                        <div class="type-lb pt-2">
+                                            <p class="sale">Doesn't exist</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-3 bg-light pt-2 text-right rounded">
+            <div class="pt-2">
+                <h4>Category</h4>
+                <hr>
+                <h5 class="text-danger">Clothes</h5>
+                <ul class="mr-3">
+                    {% for clth in cloth %}
+                        <li><a href="{% url "category_detail" clth.id %}">{{ clth.name }}</a></li>
+                    {% endfor %}
+                </ul>
+                <h5 class="pt-2 text-danger">Accessory</h5>
+                <ul class="mr-3">
+                    {% for accr in accessories %}
+                        <li><a href="{% url "category_detail" accr.id %}">{{ accr.name }}</a></li>
+                    {% endfor %}
+                </ul>
+                <hr>
+            </div>
+            <div>
+                <h4>Filters</h4>
+                <h5 class="text-danger">Category</h5>
+                <div style="height: 350px; overflow-scrolling: auto;" class="pr-5">
+                    {% for clth in cloth %}
+                        <form action="{% url "search" %}" method="get" id="form{{ clth.id }}">
+                            <label for="category{{ clth.id }}" id="label{{ clth.id }}">{{ clth.name }}</label>
+                            <input type="hidden" name="categoryfilter" value="{{ clth.name }}">
+                            {% if request.GET.q %}
+                                <input type="hidden" name="q" value="{{ request.GET.q}}">
+                            {% endif %}
+                            {% if request.GET.brandfilter %}
+                                <input type="hidden" name="brandfilter" value="{{ request.GET.brandfilter }}">
+                            {% endif %}
+                            <input type="checkbox" id="category{{ clth.id }}" value="true" onchange="filters('category{{ clth.id }}', 'categoryfilter', 'form{{ clth.id }}')"><br>
+                        </form>
+                    {% endfor %}
+                    {% for accr in accessories %}
+                        <form action="{% url "search" %}" method="get" id="form{{ accr.id }}">
+                            <label for="category{{ accr.id }}" id="label{{ accr.id }}">{{ accr.name }}</label>
+                            <input type="hidden" name="categoryfilter" value="{{ clth.name }}">
+                            {% if request.GET.q %}
+                                <input type="hidden" name="q" value="{{ request.GET.q}}">
+                            {% endif %}
+                            {% if request.GET.brandfilter %}
+                                <input type="hidden" name="brandfilter" value="{{ request.GET.brandfilter }}">
+                            {% endif %}
+                            <input type="checkbox" id="category{{ accr.id }}" value="true" onchange="filters('category{{ accr.id }}', 'categoryfilter', 'form{{ accr.id }}')"><br>
+                        </form>
+                    {% endfor %}
+                </div>
+                <hr>
+                <h5 class="text-danger">Brands</h5>
+                <div style="height: fit-content; overflow: auto;" class="pr-5">
+                    {% for brand in brands %}
+                        <form action="{% url "search" %}" method="get" id="brandform{{ brand.id }}">
+                            <label for="brand{{ brand.id }}">{{ brand.name }}</label>
+                            <input type="hidden" name="brandfilter" value="{{ brand.name }}">
+                            {% if request.GET.q %}
+                                <input type="hidden" name="q" value="{{ request.GET.q}}">
+                            {% endif %}
+                            {% if request.GET.categoryfilter %}
+                                <input type="hidden" name="categoryfilter" value="{{ request.GET.categoryfilter }}">
+                            {% endif %}
+                            <input type="checkbox" id="brand{{ brand.id }}" value="true" onchange="filters('brand{{ brand.id }}', 'brandfilter', 'brandform{{ brand.id }}')"><br>
+                        </form>
+                    {% endfor %}
+                </div>
+                <hr>
+                <span class="text-danger pr-3">Price</span>
+                <div class="pt-2 pl-3">
+                    <span class="d-flex align-items-baseline">
+                        <label for="less_price" class="pr-2">Minimum:</label>
+                        <input type="number" id="less_price" class="rounded" style="width: 80px;">
+                    </span>
+                    <span class="d-flex align-items-baseline">
+                        <label for="max_price" class="pr-2">Maximum:</label>
+                        <input type="number" id="max_price" class="rounded" style="width: 80px;">
+                    </span>
+                </div>
+                <div class="mt-2 pb-3 text-center">
+                    <button class="btn-warning rounded" onclick="filter('','','price_range')">submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block script %}
+    <script>
+        function filters(id, filter, formid){
+            let value =  $(`#${id}`).val()
+            console.log(value)
+            if (value === "true"){
+                console.log("inside if")
+                $(`#${formid}`).submit()
+                console.log("submited")
+                $(`#${id}`).checked = "checked"
+            }
+            if (value === "false"){
+                console.log("inside if")
+                $(`#${filter}`).val("")
+                $("form").submit()
+                console.log("submited")
+                $(`#${id}`).checked = false
+            }
+        }
+        function latest_ordering(){
+            $.ajax({
+                type: "get",
+                data: JSON.stringify({'status': "True"}),
+                url: "{% url "search" %}"
+            })
+        }
+        let category = [];
+        let brand = [];
+        let price_range = {'max':null, 'min':null}
+        function filter(id, name, filter_status){
+            console.log(id)
+            console.log(name)
+            console.log('cat before',category)
+            console.log('brand before' ,brand)
+            if (filter_status === 'categoryfilter'){
+                let cat_val = document.querySelector(`#category${id} `).checked
+                if (cat_val === true){
+                    category.push(name)
+                }
+            }
+            if (filter_status === 'categoryfilter'){
+                let cat_val = document.querySelector(`#category${id} `).checked
+                if (cat_val === false){
+                    const index = category.indexOf(name);
+                    if (index > -1) {
+                      category.splice(index, 1);
+                    }
+                }
+            }
+            if (filter_status === 'brandfilter') {
+                let brand_val = document.querySelector(`#brand${id}`).checked
+                if (brand_val === true) {
+                    brand.push(name)
+                }
+            }
+            if (filter_status === 'brandfilter'){
+                let brand_val = document.querySelector(`#brand${id} `).checked
+                if (brand_val === false){
+                    const index = brand.indexOf(name);
+                    if (index > -1) {
+                      brand.splice(index, 1);
+                    }
+                }
+            }
+            console.log('cat after' ,category)
+            console.log('brand after',brand)
+            if (filter_status === 'price_range'){
+                price_range['min'] = $("#less_price").val()
+                price_range['max'] = $("#max_price").val()
+            }
+            console.log(price_range)
+            let data
+            data = JSON.stringify({'category': category, 'brand': brand, 'order': false, 'price_a': false, 'price_d': false,
+                'shop_name': '{{shop.name}}', 'less_val': price_range['min'], 'max_val': price_range['max']})
+            if (filter_status === 'order'){
+                data = JSON.stringify({'category': category, 'brand': brand, 'order': true, 'price_a': false, 'price_d': false, 'shop_name': '{{shop.name}}', 'less_val': price_range['min'], 'max_val': price_range['max']})
+            }
+            if (filter_status === 'price_a'){
+                data = JSON.stringify({'category': category, 'brand': brand, 'order': false, 'price_a': true, 'price_d': false, 'shop_name': '{{shop.name}}', 'less_val': price_range['min'], 'max_val': price_range['max']})
+            }
+            if (filter_status === 'price_d'){
+                data = JSON.stringify({'category': category, 'brand': brand, 'order': false, 'price_a': false, 'price_d': true, 'shop_name': '{{shop.name}}', 'less_val': price_range['min'], 'max_val': price_range['max']})
+            }
+            $.ajax({
+                type: "get",
+                url: "{% url "search" %}",
+                data: {'data': data},
+                success: (response) => {
+
+                    {#var url = "{% url 'product_detail' %}"#}
+                    let product;
+                    resp = JSON.parse(response)
+                    console.log(resp)
+                    $('#products').empty()
+                    for (product of resp['products']){
+                        console.log(product)
+                        let price
+                        let tag
+                        if (product.price){
+                            price = product.price
+                            tag = `<div class="type-lb pt-2"><p class="sale">Sale</p></div><h3>${price}</h3>`
+                        }
+                        else {
+                            tag = `<div class="type-lb pt-2"><p class="sale">Doesn't exist</p></div>`
+                        }
+                        {#url = url + "/" + product['id']#}
+                        $("#products").append(`
+                            <div class="col-3 rounded m-2 border-top border-danger ">
+                                <div class="products-single pt-2">
+                                    <div class="box-img-hover">
+                                        <img src="${product.image}" class="img-fluid" alt="Image">
+                                        <div class="mask-icon">
+                                            <ul>
+                                                <li><a href="/products/content/${product.id}" data-toggle="tooltip" data-placement="right" title="View"><i class="fas fa-eye"></i></a></li>
+                                                <li><a href="#" data-toggle="tooltip" data-placement="right" title="Compare"><i class="fas fa-sync-alt"></i></a></li>
+                                                <li><a href="#" data-toggle="tooltip" data-placement="right" title="Add to Wishlist"><i class="far fa-heart"></i></a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="why-text">
+                                        <h4>${product.name}</h4>
+                                        <div id="tags">
+                                            ${tag}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `)
+                    }
+
+                }
+            })
+        }
+    </script>
+{% endblock %}

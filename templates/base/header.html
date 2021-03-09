@@ -1,0 +1,153 @@
+<!-- Start Main Top -->
+<div class="main-top">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="our-link">
+                    <ul>
+                        {% if user.is_authenticated %}
+                            <li><a href="{% url "profile" user.id %}">My Account</a></li>
+                            <li><a href="{% url "logout" %}">Logout</a></li>
+                        {% else %}
+                            <li><a href="{% url "login" %}">Login</a></li>
+                            <li><a href="{% url "register" %}">Register</a></li>
+                        {% endif %}
+                        <li><a href="#">Our location</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Main Top -->
+
+<!-- Start Main Top -->
+<header class="main-header">
+    <!-- Start Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light navbar-default bootsnav">
+        <div class="container">
+            <!-- Start Header Navigation -->
+            <div class="navbar-header">
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-menu" aria-controls="navbars-rs-food" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="fa fa-bars"></i>
+            </button>
+                <a class="navbar-brand" href="index.html"><img src="images/logo.png" class="logo" alt=""></a>
+            </div>
+            <!-- End Header Navigation -->
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="navbar-menu">
+                <ul class="nav navbar-nav ml-auto" data-in="fadeInDown" data-out="fadeOutUp">
+                    <li class="nav-item active"><a class="nav-link" href="{% url "main" %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="about.html">About Us</a></li>
+                    <li class="dropdown megamenu-fw">
+                        <a href="#" class="nav-link dropdown-toggle arrow" data-toggle="dropdown">Product</a>
+                        <ul class="dropdown-menu megamenu-content" role="menu">
+                            <li>
+                                <div class="row">
+                                    <!-- end col-3 -->
+                                    <!-- end col-3 -->
+                                    <div class="col-menu col-md-6">
+                                        <a class="title" style="font-size: large">Clothes</a>
+                                        <div class="content">
+                                            <ul class="menu-col">
+                                                {% for clth in cloth %}
+                                                    <li><a href="{% url "category_detail" clth.id %}">{{ clth }}</a></li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="col-menu col-md-6">
+                                        <a class="title" style="font-size: large" >Accessories</a>
+                                        <div class="content">
+                                            <ul class="menu-col">
+                                                {% for accessory in accessories %}
+                                                    <li><a href="{% url "category_detail" accessory.id %}">{{ accessory }}</a></li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <!-- end col-3 -->
+                                </div>
+                                <!-- end row -->
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle arrow" data-toggle="dropdown">SHOP</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="cart.html">Cart</a></li>
+                            <li><a href="checkout.html">Checkout</a></li>
+                            <li><a href="my-account.html">My Account</a></li>
+                            <li><a href="wishlist.html">Wishlist</a></li>
+                            <li><a href="shop-detail.html">Shop Detail</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="service.html">Our Service</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contact-us.html">Contact Us</a></li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+
+            <!-- Start Atribute Navigation -->
+            <div class="attr-nav">
+                <ul>
+                    <li class="search"><a href="#"><i class="fa fa-search"></i></a></li>
+                    <li class="side-menu">
+                        <a href="{% url 'basket' %}">
+                            <i class="fa fa-shopping-bag"></i>
+{#                          <span class="badge">3</span>#}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <!-- End Atribute Navigation -->
+        </div>
+        <!-- Start Side Menu -->
+        <div class="side">
+            <a href="#" class="close-side"><i class="fa fa-times"></i></a>
+            {% if user.is_authenticated %}
+                <li class="cart-box">
+                    <ul class="cart-list">
+                        {% for item in basket_items %}
+                            <li>
+                                <a href="#" class="photo"><img src="{{ item.product.image.url }}" class="cart-thumb" alt="" /></a>
+                                <h6><a href="#">{{ item.product.name }}</a></h6>
+                                <p>{{ item.quantity }}x - <span class="price">{{ item.shop_product.price }}</span></p>
+                            </li>
+                        {% endfor %}
+                        <li class="total">
+                            <a href="{% url 'basket' %}" class="btn btn-default hvr-hover btn-cart">VIEW CART</a>
+                        </li>
+                    </ul>
+                </li>
+            {% else %}
+                <p class="font-weight-bold text-white mt-5">please login first</p>
+            {% endif %}
+        </div>
+        <!-- End Side Menu -->
+    </nav>
+    <!-- End Navigation -->
+</header>
+<!-- End Main Top -->
+
+<!-- Start Top Search -->
+<div class="top-search">
+    <div class="container">
+        <div class="input-group">
+            <form action="{% url "search" %}" method="get">
+                <button type="submit" class="input-group-addon"><i class="fa fa-search"></i></button>
+                {% if  request.GET.categoryfilter %}
+                    <input type="hidden" name="categoryfilter" value="{{ request.GET.categoryfilter }}">
+                {% endif %}
+                {% if request.GET.brandfilter %}
+                    <input type="hidden" name="brandfilter" value="{{ request.GET.brandfilter }}">
+                {% endif %}
+                <input type="text" name="q" class="form-control" style="width: 350px" placeholder="Search in products and categories and brands">
+            </form>
+            <span class="input-group-addon close-search"><i class="fa fa-times"></i></span>
+        </div>
+    </div>
+</div>
+<!-- End Top Search -->

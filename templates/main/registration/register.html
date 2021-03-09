@@ -1,0 +1,32 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block title %} Register {% endblock %}
+{% block content %}
+    <div class="container mt-3 mb-3">
+        <div class="row rounded shadow m-2" style="background-color: lightgray">
+            <div class="col-6 mt-2 mb-2">
+                <img src="../../../media/site/slideshow/banner-01.jpg" alt="" style="width: 600px; height: 700px;">
+            </div>
+            <div class="col-6 mt-2 mb-2 text-center d-flex justify-content-center align-items-center">
+                <form action="{% url "register" %}" method="post">
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
+                    {% for field in form %}
+                        <div class="form-group">
+                            {{ field.label_tag }} {{ field }}
+                            {% if field.help_text %}
+                                <small class="help">{{ field.help_text|safe }}</small>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div role="alert" class="alert alert-danger mt-3">
+                                    {{error}}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                    <input value="register" type="submit" class="btn-outline-primary rounded">
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends "base/base.html" %}
+{% load mathfilters %}
+{% load static %}
+{% block link %}<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">{% endblock %}
+{% block title %} Shop Basket {% endblock %}
+{% block content %}
+    <div class="cart-box-main">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="table-main table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Images</th>
+                                    <th>Product Name</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                    <th>Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for basket_item in basket_items %}
+                                    <tr id="basket_item" class="bg-light">
+                                        <td class="thumbnail-img">
+                                            <a href="#">
+                                                <img class="img-fluid" src="{{ basket_item.product.image.url }}" alt="" />
+                                            </a>
+                                        </td>
+                                        <td class="name-pr">
+                                            <a href="{% url "product_detail" basket_item.product.id %}">
+                                                {{ basket_item.product.name }}
+                                            </a>
+                                            <p>{{ size }} | {{ color }}</p>
+                                        </td>
+                                        <td class="price-pr">
+                                            <p>{{ basket_item.shop_product.price }}</p>
+                                        </td>
+                                        <td class="quantity-box">
+{#                                            <button class="material-icons border-0" style="color: #1C7AA8; background-color: transparent;" onclick="add_quantity({{ basket_item.id }})">add</button>#}
+                                            <input type="number" class="pl-2 pr-2" style="font-size: larger; width: fit-content;" id="quantity{{ basket_item.id }}" value="{{ basket_item.quantity }}" oninput="add_quantity({{ basket_item.id }})">
+{#                                            <button class="material-icons border-0" style="color: indianred; background-color: transparent;">remove</button>#}
+                                        </td>
+                                        <td class="total-pr">
+                                            <p id="item_total_price1{{ basket_item.id }}">{{ basket_item.shop_product.price | mul:basket_item.quantity }}</p>
+                                        </td>
+                                        <td class="remove-pr">
+                                            <a href="#" onclick="delete_item({{ basket_item.id }})">
+                                                <i class="fas fa-times"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row my-5">
+                <div class="col-lg-6 col-sm-6">
+                    <div class="update-box button-style rounded btn-outline-danger bg-dark" style="width: fit-content">
+                        <a href="{% url 'main' %}" class="pl-2 pr-2 text-white">keep shopping</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row my-5">
+                <div class="col-lg-8 col-sm-12"></div>
+                <div class="col-lg-4 col-sm-12">
+                    <div class="order-box">
+                        <h3>Order summary</h3>
+                        <div class="d-flex">
+                            <h4>Sub Total</h4>
+                            {% for basket_item in basket_items%}
+                                <div id="item_total_price2{{ basket_item.id }}" class="ml-auto font-weight-bold">{{ basket_item.shop_product.price | mul:basket_item.quantity }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="d-flex">
+                            <h4>Shipping Cost</h4>
+                            <div class="ml-auto font-weight-bold"> Free </div>
+                        </div>
+                        <hr>
+                        <div class="d-flex gr-total">
+                            <h5>Grand Total</h5>
+                            <div class="ml-auto h5" id="total_price">{{ total_price }}</div>
+                        </div>
+                        <hr> </div>
+                </div>
+                <div class="col-12 d-flex shopping-box justify-content-end">
+                    <form method="post" action="{% url "order" %}">
+                        {% csrf_token %}
+                        <input type="hidden" value="{{ total_price }}" name="total_price">
+                        <input type="submit" class="ml-auto btn hvr-hover rounded text-white" value="Checkout">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block script %}
+    <script>
+        function delete_item(basketid){
+            let data = JSON.stringify({'basket_id': basketid})
+            $.ajax({
+                type: "post",
+                url:"{% url "delete_basket" %}",
+                data: data,
+                success: (response)=>{
+                    mssg = JSON.parse(response)
+                    $(`#basket_item`).remove()
+                    alert(mssg['mssg'])
+                }
+            })
+        }
+        function add_quantity(item_id){
+            let value = $(`#quantity${item_id}`).val()
+            let data = JSON.stringify({'value': value, 'item_id': item_id})
+            $.ajax({
+                type: "post",
+                url: "{% url "add_quantity" %}",
+                data: data,
+                success: (response) => {
+                    let resp = JSON.parse(response)
+                    $(`#quantity${resp['item_id']}`).val(resp['quantity'])
+                    $(`#item_total_price1${resp['item_id']}`).text(resp['item_total_price'])
+                    $(`#item_total_price2${resp['item_id']}`).text(resp['item_total_price'])
+                    $(`#total_price`).text(resp['total_price'])
+                }
+            })
+        }
+        function redirect(url){
+            console.log(url)
+            window.location.href = url
+        }
+    </script>
+{% endblock %}

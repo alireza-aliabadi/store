@@ -1,0 +1,241 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block title %} category-detail {% endblock %}
+{% block content %}
+    <div class="d-flex container mt-2 mb-2">
+        <div class="col-10 bg-light pt-2 pb-2 mr-2 rounded">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <span><a href="{% url 'main' %}">Home > </a></span>
+                    {% if parent.parent %}
+                        <span><a href="{% url 'category_detail' parent.parent.id %}">{{ parent.parent }} ></a></span>
+                    {% endif %}
+                    {% if parent %}
+                        <span><a href="{% url 'category_detail' parent.id %}">{{ parent }} ></a></span>
+                    {% endif %}
+                    <span><a href="{% url 'category_detail' current_category.id %}" class="font-weight-bold">{{ current_category }}</a></span>
+                </div>
+                <div class="text-right">
+                    <button class="rounded shadow border-0 btn-outline-primary " style="width: fit-content; height: fit-content;" onclick="filter('', '','order')">latest</button>
+                    <button class="rounded shadow border-0 btn-outline-primary " style="width: fit-content; height: fit-content;" onclick="filter('', '','price_a')">Price Ascending</button>
+                    <button class="rounded shadow border-0 btn-outline-primary " style="width: fit-content; height: fit-content;" onclick="filter('', '','price_d')">Price Descending</button>
+                </div>
+            </div>
+            <div>
+                <div class="pl-4 row mt-2" id="products">
+                    {% for product in products %}
+                        <div class="col-3 rounded m-2 border-top border-danger ">
+                            <div class="products-single pt-2">
+                                <div class="box-img-hover">
+                                    <img src="{{ product.image.url }}" class="img-fluid" alt="Image">
+                                    <div class="mask-icon">
+                                        <ul>
+                                            <li><a href="{% url "product_detail" product.id %}" data-toggle="tooltip" data-placement="right" title="View"><i class="fas fa-eye"></i></a></li>
+                                            <li><a href="#" data-toggle="tooltip" data-placement="right" title="Compare"><i class="fas fa-sync-alt"></i></a></li>
+                                            <li><a href="#" data-toggle="tooltip" data-placement="right" title="Add to Wishlist"><i class="far fa-heart"></i></a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="why-text">
+                                    <h4>{{ product.name }}</h4>
+                                    {% if product.min_price %}
+                                        <div class="type-lb pt-2">
+                                            <p class="sale">Sale</p>
+                                        </div>
+                                        <h3>{{ product.min_price }}</h3>
+                                    {% else %}
+                                        <div class="type-lb pt-2">
+                                            <p class="sale">Doesn't exist</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-3 bg-light pt-2 text-right rounded">
+            <div class="pt-2">
+                <h4>Category</h4>
+                <hr>
+                {% if parent %}
+                    <a href="{% url 'category_detail' parent.id %}">{{ parent }}</a>
+                    <ul class="mr-3">
+                    {% for category in parent.child.all %}
+                        {% if category == current_category %}
+                            <li>
+                                <a href="{% url 'category_detail' category.id %}" class="font-weight-bold">{{ category }}</a>
+                                <ul class="mr-3">
+                                    {% for child in child_categories %}
+                                        <li><a href="{% url 'category_detail' child.id %}">{{ child }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        {% else %}
+                            <li><a href="{% url 'category_detail' category.id %}">{{ category }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <a href="{% url 'category_detail' current_category.id %}" class="font-weight-bold">{{ current_category }}</a>
+                    <ul class="mr-3">
+                        {% for child in child_categories%}
+                            <li><a href="{% url 'category_detail' child.id %}">{{ child }}</a></li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <hr>
+            </div>
+            <div>
+                <h4>Filters</h4>
+                <h5>Category</h5>
+                <div style="height: 350px; overflow-scrolling: auto;" class="pr-5">
+                    {% for category in categories %}
+                        <label for="category{{ category.id }}" id="label{{ category.id }}">{{ category.name }}</label>
+                        <input type="hidden" name="category_filter" value="{{ category.name }}">
+                        <input type="hidden" name="brand_filter" value="">
+                        <input type="checkbox" id="category{{ category.id }}" onchange="filter('{{ category.id }}', '{{ category.name }}', 'categoryfilter')"><br>
+                    {% endfor %}
+                </div>
+                <hr>
+                <h5>Brands</h5>
+                <div style="height: fit-content; overflow: auto;" class="pr-5">
+                    {% for brand in brands %}
+                        <label for="category{{ brand.id }}" id="label{{ brand.id }}">{{ brand.name }}</label>
+                        <input type="hidden" id="brand_filter{{ brand.id }}" name="brand_filter" value="{{ brand.name }}">
+                        <input type="hidden" id="category_filter" name="category_filter" value="">
+                        <input type="checkbox" id="brand{{ brand.id }}" onchange="filter('{{ brand.id }}', '{{ brand.name }}', 'brandfilter')"><br>
+                    {% endfor %}
+                </div>
+                <hr>
+                <span class="text-danger pr-3">Price</span>
+                <div class="pt-2 pl-3">
+                    <span class="d-flex align-items-baseline">
+                        <label for="less_price" class="pr-2">Minimum:</label>
+                        <input type="number" id="less_price" class="rounded" style="width: 80px;">
+                    </span>
+                    <span class="d-flex align-items-baseline">
+                        <label for="max_price" class="pr-2">Maximum:</label>
+                        <input type="number" id="max_price" class="rounded" style="width: 80px;">
+                    </span>
+                </div>
+                <div class="mt-2 pb-3 text-center">
+                    <button class="btn-warning rounded" onclick="filter('','','price_range')">submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block script %}
+    <script>
+        let category = [];
+        let brand = [];
+        let price_range = {'max':null, 'min':null}
+        function filter(id, name, filter_status){
+            console.log(id)
+            console.log(name)
+            console.log('cat before',category)
+            console.log('brand before' ,brand)
+            if (filter_status === 'categoryfilter'){
+                let cat_val = document.querySelector(`#category${id} `).checked
+                if (cat_val === true){
+                    category.push(name)
+                }
+            }
+            if (filter_status === 'categoryfilter'){
+                let cat_val = document.querySelector(`#category${id} `).checked
+                if (cat_val === false){
+                    const index = category.indexOf(name);
+                    if (index > -1) {
+                      category.splice(index, 1);
+                    }
+                }
+            }
+            if (filter_status === 'brandfilter') {
+                let brand_val = document.querySelector(`#brand${id}`).checked
+                if (brand_val === true) {
+                    brand.push(name)
+                }
+            }
+            if (filter_status === 'brandfilter'){
+                let brand_val = document.querySelector(`#brand${id} `).checked
+                if (brand_val === false){
+                    const index = brand.indexOf(name);
+                    if (index > -1) {
+                      brand.splice(index, 1);
+                    }
+                }
+            }
+            console.log('cat after' ,category)
+            console.log('brand after',brand)
+            if (filter_status === 'price_range'){
+                price_range['min'] = $("#less_price").val()
+                price_range['max'] = $("#max_price").val()
+            }
+            console.log(price_range)
+            let data
+            data = JSON.stringify({'category': category, 'brand': brand, 'order': false, 'price_a': false, 'price_d': false,
+                'shop_name': '{{shop.name}}', 'less_val': price_range['min'], 'max_val': price_range['max']})
+            if (filter_status === 'order'){
+                data = JSON.stringify({'category': category, 'brand': brand, 'order': true, 'price_a': false, 'price_d': false, 'shop_name': '{{shop.name}}', 'less_val': price_range['min'], 'max_val': price_range['max']})
+            }
+            if (filter_status === 'price_a'){
+                data = JSON.stringify({'category': category, 'brand': brand, 'order': false, 'price_a': true, 'price_d': false, 'shop_name': '{{shop.name}}', 'less_val': price_range['min'], 'max_val': price_range['max']})
+            }
+            if (filter_status === 'price_d'){
+                data = JSON.stringify({'category': category, 'brand': brand, 'order': false, 'price_a': false, 'price_d': true, 'shop_name': '{{shop.name}}', 'less_val': price_range['min'], 'max_val': price_range['max']})
+            }
+            $.ajax({
+                type: "get",
+                url: "{% url "category_detail" current_category.id %}",
+                data: {'data': data},
+                success: (response) => {
+
+                    {#var url = "{% url 'product_detail' %}"#}
+                    let product;
+                    resp = JSON.parse(response)
+                    console.log(resp)
+                    $('#products').empty()
+                    for (product of resp['products']){
+                        console.log(product)
+                        let price
+                        let tag
+                        if (product.price){
+                            price = product.price
+                            tag = `<div class="type-lb pt-2"><p class="sale">Sale</p></div><h3>${price}</h3>`
+                        }
+                        else {
+                            tag = `<div class="type-lb pt-2"><p class="sale">Doesn't exist</p></div>`
+                        }
+                        {#url = url + "/" + product['id']#}
+                        $("#products").append(`
+                            <div class="col-3 rounded m-2 border-top border-danger ">
+                                <div class="products-single pt-2">
+                                    <div class="box-img-hover">
+                                        <img src="${product.image}" class="img-fluid" alt="Image">
+                                        <div class="mask-icon">
+                                            <ul>
+                                                <li><a href="/products/content/${product.id}" data-toggle="tooltip" data-placement="right" title="View"><i class="fas fa-eye"></i></a></li>
+                                                <li><a href="#" data-toggle="tooltip" data-placement="right" title="Compare"><i class="fas fa-sync-alt"></i></a></li>
+                                                <li><a href="#" data-toggle="tooltip" data-placement="right" title="Add to Wishlist"><i class="far fa-heart"></i></a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="why-text">
+                                        <h4>${product.name}</h4>
+                                        <div id="tags">
+                                            ${tag}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `)
+                    }
+
+                }
+            })
+        }
+    </script>
+{% endblock %}

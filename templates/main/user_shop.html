@@ -1,0 +1,228 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block title %}ShopPage{% endblock %}
+{% block link %}
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/resources/demos/style.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+    $( function() {
+        $( "#slider-range" ).slider({
+              range: true,
+              min: 0,
+              max: 500,
+              values: [ 75, 300 ],
+              slide: function( event, ui ) {
+                    $("#less_price").val(ui.values[ 0 ]) + $("#max_price").val(ui.values[ 1 ]);
+              }
+        });
+    });
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="d-flex container mt-2 mb-2">
+        <div class="col-10 bg-light pt-2 pb-2 mr-2 rounded">
+            <div class="text-right">
+                <input type="hidden" name="latest" value="True">
+                <button class="rounded shadow border-0 btn-outline-primary " style="width: fit-content; height: fit-content;" onclick="filter('', '','order')">latest</button>
+                <button class="rounded shadow border-0 btn-outline-primary " style="width: fit-content; height: fit-content;" onclick="filter('', '','price_a')">Price Ascending</button>
+                <button class="rounded shadow border-0 btn-outline-primary " style="width: fit-content; height: fit-content;" onclick="filter('', '','price_d')">Price Descending</button>
+            </div>
+            <div>
+                <div class="pl-4 row" id="products">
+                    {% for product in products %}
+                        <div class="col-3 rounded m-2 border-top border-danger ">
+                            <div class="products-single pt-2">
+                                <div class="box-img-hover">
+                                    <img src="{{ product.image.url }}" class="img-fluid" alt="Image">
+                                    <div class="mask-icon">
+                                        <ul>
+                                            <li><a href="{% url "product_detail" product.id %}" data-toggle="tooltip" data-placement="right" title="View"><i class="fas fa-eye"></i></a></li>
+                                            <li><a href="#" data-toggle="tooltip" data-placement="right" title="Compare"><i class="fas fa-sync-alt"></i></a></li>
+                                            <li><a href="#" data-toggle="tooltip" data-placement="right" title="Add to Wishlist"><i class="far fa-heart"></i></a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="why-text">
+                                    <h4>{{ product.name }}</h4>
+                                    {% if product.min_price %}
+                                        <div class="type-lb pt-2">
+                                            <p class="sale">Sale</p>
+                                        </div>
+                                        <h3>{{ product.min_price }}</h3>
+                                    {% else %}
+                                        <div class="type-lb pt-2">
+                                            <p class="sale">Doesn't exist</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-3 pt-2 text-right rounded">
+            <div class="text-center rounded bg-warning shadow rounded">
+                {% if shop.image %}
+                    <img src="{{ shop.image.url }}" alt="" style="width: 130px; height: 130px;" class="rounded-circle mt-3">
+                {% endif %}
+                <p class="font-weight-bold">{{ shop.name }}</p>
+                <hr class="border-info border">
+                <p class="pb-3">{{ shop.description }}</p>
+            </div>
+            {% if add_status %}
+                <div class="mt-2 text-center btn-primary rounded text-center w-100 d-flex justify-content-center align-items-center" style="height: 40px">
+                    <a href="{% url "shop_add_product" %}" class="text-white">Add Product</a>
+                </div>
+            {% endif %}
+            <div class="bg-light text-right rounded mt-2">
+                <span class="text-danger pr-3">Categories</span>
+                <div class="mr-5">
+                    {% for category in categories %}
+                        <label for="category{{ category.id }}" id="label{{ category.id }}">{{ category.name }}</label>
+                        <input type="hidden" name="category_filter" value="{{ category.name }}">
+                        <input type="hidden" name="brand_filter" value="">
+                        <input type="checkbox" id="category{{ category.id }}" onchange="filter('{{ category.id }}', '{{ category.name }}', 'categoryfilter')"><br>
+                    {% endfor %}
+                </div>
+                <span class="text-danger pr-3">Brands</span>
+                <div class="mr-5">
+                    {% for brand in brands %}
+                        <label for="category{{ brand.id }}" id="label{{ brand.id }}">{{ brand.name }}</label>
+                        <input type="hidden" id="brand_filter{{ brand.id }}" name="brand_filter" value="{{ brand.name }}">
+                        <input type="hidden" id="category_filter" name="category_filter" value="">
+                        <input type="checkbox" id="brand{{ brand.id }}" onchange="filter('{{ brand.id }}', '{{ brand.name }}', 'brandfilter')"><br>
+                    {% endfor %}
+                </div>
+                <span class="text-danger pr-3">Price</span>
+                <div class="pt-2 pl-3">
+                    <span class="d-flex align-items-baseline">
+                        <label for="less_price" class="pr-2">Minimum:</label>
+                        <input type="number" id="less_price" class="rounded" style="width: 80px;">
+                    </span>
+                    <span class="d-flex align-items-baseline">
+                        <label for="max_price" class="pr-2">Maximum:</label>
+                        <input type="number" id="max_price" class="rounded" style="width: 80px;">
+                    </span>
+{#                    <div id="slider-range"></div>#}
+                </div>
+                <div class="mt-2 pb-3 text-center">
+                    <button class="btn-warning rounded" onclick="filter('','','price_range')">submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block script %}
+    <script>
+        let category = [];
+        let brand = [];
+        let price_range = {'max':null, 'min':null}
+        function filter(id, name, filter_status){
+            console.log(id)
+            console.log(name)
+            console.log('cat before',category)
+            console.log('brand before' ,brand)
+            if (filter_status === 'categoryfilter'){
+                let cat_val = document.querySelector(`#category${id} `).checked
+                if (cat_val === true){
+                    category.push(name)
+                }
+            }
+            if (filter_status === 'categoryfilter'){
+                let cat_val = document.querySelector(`#category${id} `).checked
+                if (cat_val === false){
+                    const index = category.indexOf(name);
+                    if (index > -1) {
+                      category.splice(index, 1);
+                    }
+                }
+            }
+            if (filter_status === 'brandfilter') {
+                let brand_val = document.querySelector(`#brand${id}`).checked
+                if (brand_val === true) {
+                    brand.push(name)
+                }
+            }
+            if (filter_status === 'brandfilter'){
+                let brand_val = document.querySelector(`#brand${id} `).checked
+                if (brand_val === false){
+                    const index = brand.indexOf(name);
+                    if (index > -1) {
+                      brand.splice(index, 1);
+                    }
+                }
+            }
+            console.log('cat after' ,category)
+            console.log('brand after',brand)
+            if (filter_status === 'price_range'){
+                price_range['min'] = $("#less_price").val()
+                price_range['max'] = $("#max_price").val()
+            }
+            console.log(price_range)
+            let data
+            data = JSON.stringify({'category': category, 'brand': brand, 'order': false, 'price_a': false, 'price_d': false,
+                'shop_name': '{{shop.name}}', 'less_val': price_range['min'], 'max_val': price_range['max']})
+            if (filter_status === 'order'){
+                data = JSON.stringify({'category': category, 'brand': brand, 'order': true, 'price_a': false, 'price_d': false, 'shop_name': '{{shop.name}}', 'less_val': price_range['min'], 'max_val': price_range['max']})
+            }
+            if (filter_status === 'price_a'){
+                data = JSON.stringify({'category': category, 'brand': brand, 'order': false, 'price_a': true, 'price_d': false, 'shop_name': '{{shop.name}}', 'less_val': price_range['min'], 'max_val': price_range['max']})
+            }
+            if (filter_status === 'price_d'){
+                data = JSON.stringify({'category': category, 'brand': brand, 'order': false, 'price_a': false, 'price_d': true, 'shop_name': '{{shop.name}}', 'less_val': price_range['min'], 'max_val': price_range['max']})
+            }
+            $.ajax({
+                type: "get",
+                url: "{% url "user_shop_page" shop.name %}",
+                data: {'data': data},
+                success: (response) => {
+
+                    {#var url = "{% url 'product_detail' %}"#}
+                    let product;
+                    resp = JSON.parse(response)
+                    console.log(resp)
+                    $('#products').empty()
+                    for (product of resp['products']){
+                        console.log(product)
+                        let price
+                        let tag
+                        if (product.price){
+                            price = product.price
+                            tag = `<div class="type-lb pt-2"><p class="sale">Sale</p></div><h3>${price}</h3>`
+                        }
+                        else {
+                            tag = `<div class="type-lb pt-2"><p class="sale">Doesn't exist</p></div>`
+                        }
+                        {#url = url + "/" + product['id']#}
+                        $("#products").append(`
+                            <div class="col-3 rounded m-2 border-top border-danger ">
+                                <div class="products-single pt-2">
+                                    <div class="box-img-hover">
+                                        <img src="${product.image}" class="img-fluid" alt="Image">
+                                        <div class="mask-icon">
+                                            <ul>
+                                                <li><a href="/products/content/${product.id}" data-toggle="tooltip" data-placement="right" title="View"><i class="fas fa-eye"></i></a></li>
+                                                <li><a href="#" data-toggle="tooltip" data-placement="right" title="Compare"><i class="fas fa-sync-alt"></i></a></li>
+                                                <li><a href="#" data-toggle="tooltip" data-placement="right" title="Add to Wishlist"><i class="far fa-heart"></i></a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="why-text">
+                                        <h4>${product.name}</h4>
+                                        <div id="tags">
+                                            ${tag}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `)
+                    }
+
+                }
+            })
+        }
+    </script>
+{% endblock %}

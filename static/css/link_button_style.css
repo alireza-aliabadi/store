@@ -1,0 +1,7 @@
+.button-style{
+    color: black;
+
+}
+.button-style:hover{
+    color: red;
+}

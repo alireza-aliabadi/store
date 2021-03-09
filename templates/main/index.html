@@ -1,0 +1,134 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block title %}ShopOnline{% endblock %}
+{% block content %}
+  
+    <!-- Start Slider -->
+    <div id="slides-shop" class="cover-slides">
+        <ul class="slides-container">
+            {% for slide in slides %}
+                <li class="text-center">
+                    {% if slide.image %}
+                        <img src="{{ slide.image.url }}" alt="">
+                    {% endif %}
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h1 class="m-b-20"><strong>{{ slide.title }}</strong></h1>
+                                <p class="m-b-40">{{ slide.subtitle }}</p>
+                                <p><a class="btn hvr-hover" href="{{ slide.action_url }}">{{ slide.action_title }}</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+        <div class="slides-navigation">
+            <a href="#" class="next"><i class="fa fa-angle-right" aria-hidden="true"></i></a>
+            <a href="#" class="prev"><i class="fa fa-angle-left" aria-hidden="true"></i></a>
+        </div>
+    </div>
+    <!-- End Slider -->
+
+    <!-- Start Categories  -->
+    <div class="categories-shop">
+        <div class="container">
+            <h1 class="text-center font-weight-bold">Featured Categories<hr style="border: 1px solid dodgerblue"></h1>
+            <div class="owl-carousel owl-theme mb-3">
+                {% for category in categories %}
+                    <div class="ml-2 mr-2">
+                        <div class="card shadow rounded text-center">
+                            <img src="{{ category.image.url }}" alt="" class="card-img-top">
+                            <div class="card-body">
+                                <h3 class="card-title">{{ category.name }}</h3>
+                                <a href="{% url 'category_detail' category.id %}" class="btn-outline-primary rounded p-2">View</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <!-- End Categories -->
+
+    <!-- Start Products  -->
+    <div class="products-box">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="title-all text-center">
+                        <h1>Featured Products<hr style="border: 1px solid hotpink"></h1>
+                        <div class="owl-carousel owl-theme mb-3">
+                            {% for product in products %}
+                                <div class="ml-2 mr-2">
+                                    <div class="card shadow rounded">
+                                        <img src="{{ product.image.url }}" alt="" class="card-img-top">
+                                        <div class="card-body">
+                                            <h3 class="card-title">{{ product.name }}</h3>
+                                            {% if product.min_price %}
+                                                <h5>{{ product.min_price }}</h5>
+                                                <a href="{% url 'product_detail' product.id %}" class="btn-outline-primary rounded p-2">View</a>
+                                            {% else %}
+                                                <h5>-</h5>
+                                                <a href="" class="btn-outline-secondary rounded p-2">Doesn't exist</a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <h2 class="text-right">Clothes<hr style="border: 1px solid darkred"></h2>
+                        <div class="owl-carousel owl-theme mb-3">
+                            {% for product in clothes_product %}
+                                <div class="ml-2 mr-2">
+                                    <div class="card shadow rounded">
+                                        <img src="{{ product.image.url }}" alt="" class="card-img-top">
+                                        <div class="card-body">
+                                            <h3 class="card-title">{{ product.name }}</h3>
+                                            {% if product.min_price %}
+                                                <h5>{{ product.min_price }}</h5>
+                                                <a href="{% url 'product_detail' product.id %}" class="btn-outline-primary rounded p-2">View</a>
+                                            {% else %}
+                                                <h5>-</h5>
+                                                <a href="" class="btn-outline-secondary rounded p-2">Doesn't exist</a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <h2 class="text-right">Accessories<hr style="border: 1px solid darkred"></h2>
+                        <div class="owl-carousel owl-theme mb-3">
+                            {% for product in accessory_product %}
+                                <div class="ml-2 mr-2">
+                                    <div class="card shadow rounded">
+                                        <img src="{{ product.image.url }}" alt="" class="card-img-top">
+                                        <div class="card-body">
+                                            <h3 class="card-title">{{ product.name }}</h3>
+                                            {% if product.min_price %}
+                                                <h5>{{ product.min_price }}</h5>
+                                                <a href="{% url 'product_detail' product.id %}" class="btn-outline-primary rounded p-2">View</a>
+                                            {% else %}
+                                                <h5>-</h5>
+                                                <a href="" class="btn-outline-secondary rounded p-2">Doesn't exist</a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Products  -->
+{% endblock %}
+{% block script %}
+    <script>
+        $('.owl-carousel').owlCarousel({
+            autoplay: true,
+            autoplayHoverPause: true,
+        })
+    </script>
+{% endblock %}

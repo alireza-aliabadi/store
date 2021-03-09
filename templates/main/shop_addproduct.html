@@ -1,0 +1,58 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block title %} add-product {% endblock %}
+{% block content %}
+    <div class="d-flex container mt-2 mb-2 justify-content-center">
+        <div class="mt-2 mb-2 bg-light d-flex row rounded">
+            <div class="col-12 w-100 bg-primary text-center rounded-top">
+                <h3 class="text-white pt-3 pb-3">AddProduct</h3>
+            </div>
+            <div class="col-12 w-100 d-flex justify-content-center">
+                <form method="post" action="{% url "shop_add_product" %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="col-12 mt-2">
+                        <span class="mr-3">
+                            {{ form.category.errors }}
+                            {{ form.category.label }}: {{ form.category }}
+                        </span>
+                        <span>
+                            {{ form.brand.errors }}
+                            {{ form.brand.label }}: {{ form.brand }}
+                        </span>
+                    </div>
+                    <div class="col-12 mt-3 mb-3">
+                        <span>
+                            {{ form.name.errors }}
+                            {{ form.name.label }}: {{ form.name }}
+                        </span>
+                        <span>
+                            {{ form.slug.errors }}
+                            {{ form.slug.label }}: {{ form.slug }}
+                        </span>
+                        <span class="d-flex align-items-baseline mt-3 mb-3">
+                            {{ form.detail.errors }}
+                            {{ form.detail.label }}: {{ form.detail }}
+                        </span>
+                        <span>
+                            {{ form.image.errors }}
+                            {{ form.image.label }}: {{ form.image }}
+                        </span>
+                    </div>
+                    <div class="col-12 mb-2">
+                        <span>
+                            {{ form.quantity.errors }}
+                            {{ form.quantity.label }}: {{ form.quantity }}
+                        </span>
+                        <span>
+                            {{ form.price.errors }}
+                            {{ form.price.label }}: {{ form.price }}
+                        </span>
+                    </div>
+                    <span class="d-flex justify-content-center mb-2">
+                        <input type="submit" class="btn-warning rounded" value="submit">
+                    </span>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

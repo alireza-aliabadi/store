@@ -1,0 +1,291 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block title %} product-content {% endblock %}
+{% block link %}
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="{% static "css/icon_style.css" %}" rel="stylesheet">
+    <link href="{% static "css/rate_style.css" %}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+{% endblock %}
+{% block content %}
+    <div class="container w-100 h-100 text-center mt-3">
+        <div class="bg-info rounded-top" style="width: fit-content">
+            <span class="pl-2"><a href="{% url 'main' %}" class="text-white">Home ></a></span>
+            {% if category.parent.parent %}
+                <span><a href="{% url 'category_detail' category.parent.parent.id %}" class="text-white">{{ category.parent.parent }}></a></span>
+            {% endif %}
+            {% if category.parent %}
+                <span><a href="{% url 'category_detail' category.parent.id %}" class="text-white">{{ category.parent }} ></a></span>
+            {% endif %}
+            <span class="pr-2"><a href="{% url 'category_detail' category.id %}" class="font-weight-bold text-white">{{ category }}</a></span>
+        </div>
+        <div class="row rounded bg-light" style="padding: 7px 7px 0 7px;">
+                <div class="col-4 shadow h-50 mt-5" style="background-color: lightblue; border-radius: 10px;">
+                    <div class="mt-2 text-dark pb-2 font-weight-bold">
+                        <a href="{% url "user_shop_page" min_shop.shop %}" class="border-0 bg-transparent">{{ min_shop.shop }}</a>
+                        <hr>
+                        {{ min_shop.price }}
+                    </div>
+                    {% if min_shop %}
+                        <form method="post" action="{% url "basket" %}">
+                            {% csrf_token %}
+                            <input type="hidden" value="{{ min_shop.id }}" name="shop_id">
+                            <input type="hidden" value="{{ product.id }}" name="product_id">
+                            <input type="hidden" id="meta_size" name="size">
+                            <input type="hidden" id="meta_color" name="color">
+                            <button class="rounded btn-outline-danger mb-2" style="border: none; margin-bottom: 4px;" onclick="input_meta()">add to cart +</button>
+                        </form>
+                    {% else %}
+                        <button class="rounded btn-outline-secondary mb-2" style="border: none; margin-bottom: 4px;">doesn't exist</button>
+                    {% endif %}
+                </div>
+            <div class="col-4">
+                {{ product.name }}
+                <hr>
+                {% for metas in meta %}
+                    <p>{{ metas.label }}: {{ metas.value }}</p>
+                    {% if metas.label == 'color' %}
+                        <select id="color" class="rounded">
+                            {% for s in metas.get_split %}
+                                <option style="color: {{ s }}" label="{{ s }}"></option>
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        <select id="size">
+                            {% for s in metas.get_split %}
+                                <option>{{ s }}</option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
+                {% endfor %}
+                <div>
+                    <span>
+                        <button class="material-icons like pt-3" onclick="like({{ product.id }})" style="border: none; background-color: transparent;">thumb_up</button>
+                        <span class="font-weight-bold" id="product_like{{ product.id }}">{{ product.like_count }}</span>
+                    </span>
+                </div>
+            </div>
+            <div class="col-4">
+                <img src="{{ product.image.url }}" alt="{{ product.name }} picture" width="80%" height="80%" class="mt-3">
+            </div>
+        </div>
+            {% if shops %}
+                <div class="row mt-5 rounded shadow bg-white" style="padding: 7px;">
+                {% for shop in shops %}
+                    <div class="col-4">
+                        <form method="post" action="{% url "basket" %}">
+                            {% csrf_token %}
+                            <input type="hidden" value="{{ shop.id }}" name="shop_id">
+                            <input type="hidden" value="{{ product.id }}" name="product_id">
+                            <input type="hidden" id="meta_size" name="size">
+                            <input type="hidden" id="meta_color" name="color">
+                            <button class="rounded btn-outline-danger mb-2" style="border: none; margin-bottom: 4px;" onclick="input_meta()">add to cart +</button>
+                        </form>
+                    </div>
+                    <div class="col-4">{{ shop.price }}</div>
+                    <div class="col-4">
+                        <a href="{% url "user_shop_page" shop.shop %}" class="border-0 bg-transparent">{{ shop.shop }}</a>
+                    </div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        <div class="row mt-5 rounded shadow bg-white" style="padding: 7px;">
+            <div class="col-12">related products<hr></div>
+{#            <div class="col-12 d-flex justify-content-center">#}
+{#                {% for prdct in related_product %}#}
+{#                    <div class="m-2">#}
+{#                        <div class="shop-cat-box">#}
+{#                            <img class="img-fluid" src="{{ prdct.image.url }}" alt="" />#}
+{#                            <a class="btn hvr-hover" href="{% url "product_detail" prdct.id %}">{{ prdct.name }}</a>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                {% endfor %}#}
+{#            </div>#}
+            <div class="owl-carousel owl-theme mb-3">
+                {% for related in related_product %}
+                    <div class="ml-2 mr-2">
+                        <div class="card shadow rounded">
+                            <img src="{{ related.image.url }}" alt="" class="card-img-top">
+                            <div class="card-body">
+                                <h3 class="card-title">{{ related.name }}</h3>
+                                {% if related.min_price %}
+                                    <h5>{{ related.min_price }}</h5>
+                                    <a href="{% url 'product_detail' related.id %}" class="btn-outline-primary rounded p-2">View</a>
+                                {% else %}
+                                    <h5>-</h5>
+                                    <a href="" class="btn-outline-secondary rounded p-2">Doesn't exist</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="row mt-5 rounded shadow bg-white" style="padding: 7px;">
+            <div class="col-12">Description<hr></div>
+            <div class="col-12">{{ product.details }}</div>
+        </div>
+        <div class="row mt-5 rounded mb-3 shadow bg-white" style="padding: 7px;">
+            <div class="col-12">Gallery<hr></div>
+            <div class="owl-carousel owl-theme mb-3">
+                {% for field in gallery %}
+                    <div class="ml-2 mr-2">
+                        <div class="card shadow rounded">
+                            <img src="{{ field.image.url }}" alt="" class="card-img-top">
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="row mt-5 rounded mb-3 shadow bg-white" style="padding: 7px;">
+            <div class="col-12">Comments<hr></div>
+            <div class="col-12">
+                <label for="comment_text">CommentText:</label><br>
+                <textarea type="text" id="comment_text" cols="60" rows="3" placeholder="Enter your comment" class="rounded border-danger shadow"></textarea><br>
+                <form action="" method="post" id="{{ product.id }}">
+                    {% csrf_token %}
+                    <span id="first" class="fa fa-star border-0 bg-transparent p-0"></span>
+                    <span id="second" class="fa fa-star border-0 bg-transparent p-0"></span>
+                    <span id="third" class="fa fa-star border-0 bg-transparent p-0"></span>
+                    <span id="fourth" class="fa fa-star border-0 bg-transparent p-0"></span>
+                    <span id="fifth" class="fa fa-star border-0 bg-transparent p-0"></span>
+                </form>
+                <button class="btn-outline-info rounded border-0" onclick="add_comment({{ product.id }}, $(`#comment_text`).val(), +i)">send</button>
+                <hr style="background-color: blueviolet">
+                <span id="product_comments">
+                    {% for comment in comments %}
+                        <span class="font-weight-bold">{{ comment.user.full_name }}: </span>
+                        <span >
+                            {% for s in "abcde" %}
+                                {% if forloop.counter <= comment.rate %}
+                                    <span id="rate1{{ forloop.counter }}" class="fa fa-star checked"></span>
+                                {% else %}
+                                    <span id="rate1{{ forloop.counter }}" class="fa fa-star "></span>
+                                {% endif %}
+                            {% endfor %}
+    {#                        <span id="rate2{{ forloop.counter }}" class="fa fa-star"></span>#}
+    {#                        <span id="rate3{{ forloop.counter }}" class="fa fa-star"></span>#}
+    {#                        <span id="rate4{{ forloop.counter }}" class="fa fa-star"></span>#}
+    {#                        <span id="rate5{{ forloop.counter }}" class="fa fa-star"></span>#}
+                            {{ comment.rate }}
+                        </span>
+                        <script>rating({{ forloop.counter }},{{ comment.rate }})</script>
+                        <span class=""><br>{{ comment.text }}<br></span>
+                    {% endfor %}
+                </span>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block script %}
+    <script src="{% static "js/rate.js" %}"></script>
+    <script>
+        function star_rate(num){
+            console.log(num)
+            let i = 1
+            var str = ""
+            while (i<=num){
+                str += '<span id="rate1" class="fa fa-star checked"></span>'
+                i++
+            }
+            let b = 5-num
+            let j = 1
+            while (j<=b){
+                str += '<span id="rate1" class="fa fa-star"></span>'
+                j++
+            }
+            return str
+        }
+        function add_comment(product_id, content, rate){
+            const data = JSON.stringify({product_id:product_id, content:content, rate:rate})
+            $.ajax({
+                type: "post",
+                url: "{% url 'add_comment' %}",
+                data: data,
+                success: (response)=>{
+                    const resp = JSON.parse(response)
+
+                    $(`#product_comments`).prepend(`<span class="font-weight-bold">${resp['comment_user']}: </span>
+                                <span >
+                                    ${star_rate(resp['comment_rate'])}
+                                    ${resp['comment_rate']}
+                                </span>
+                                {#<script>rating({{ forloop.counter }},${resp['comment_rate']})</script>#}
+                                <span class=""><br>${resp['comment_text']}<br></span>`)
+
+                }
+            })
+        }
+    </script>
+    <script>
+        function rating(loop_counter,commentrate){
+            console.log('function ok')
+            console.log(commentrate)
+            let i
+            for (i=1; i<= +commentrate; i++){
+                $(`#rate${i}${loop_counter}`).addClass("checked")
+                console.log('loop ok')
+            }
+        }
+    </script>
+    <script>
+        let status = false
+        function like(productid){
+            if (status === false){
+                status = true
+            }
+            else {
+                status = false
+            }
+            const data = JSON.stringify({productid: productid, status: status})
+            $.ajax({
+                type: "post",
+                url: "{% url "product_like" %}",
+                data: data,
+                success: (response)=>{
+                    const resp = JSON.parse(response)
+                    $(`#product_like${productid}`).text(resp.like_counter)
+                }
+            })
+        }
+    </script>
+    <script>
+        function add_basket(product_id, shop_name, shop_price){
+            let meta = {product_id:product_id, shop_name: shop_name, price: shop_price}
+            let size = $('#size').val()
+            let color = $('#color').val()
+            console.log(size, color)
+            if (size) {
+                meta['size'] = size
+            }
+            if (color) {
+                meta['color'] = color
+            }
+            let data = JSON.stringify(meta)
+            $.ajax({
+                type: "post",
+                url: "{% url "basket" %}",
+                data: data,
+                success: (response) => {
+                    console.log('added')
+                    alert("successfully added to cart")
+                }
+            })
+        }
+        function input_meta(){
+            let size = $('#size').val()
+            let color = $('#color').val()
+            console.log(size, color)
+            if (size) {
+                $(`#meta_size`).val(size)
+            }
+            if (color) {
+                $(`#meta_color`).val(color)
+            }
+        }
+        $('.owl-carousel').owlCarousel({
+            autoplay: true,
+            autoplayHoverPause: true,
+        })
+    </script>
+{% endblock %}
