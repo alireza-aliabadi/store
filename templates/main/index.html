@@ -61,7 +61,7 @@
                         <div class="owl-carousel owl-theme mb-3">
                             {% for product in products %}
                                 <div class="ml-2 mr-2">
-                                    <div class="card shadow rounded">
+                                    <div class="card shadow rounded" style="width: 310px; height: 497px">
                                         <img src="{{ product.image.url }}" alt="" class="card-img-top">
                                         <div class="card-body">
                                             <h3 class="card-title">{{ product.name }}</h3>
@@ -70,7 +70,7 @@
                                                 <a href="{% url 'product_detail' product.id %}" class="btn-outline-primary rounded p-2">View</a>
                                             {% else %}
                                                 <h5>-</h5>
-                                                <a href="" class="btn-outline-secondary rounded p-2">Doesn't exist</a>
+                                                <a href="{% url 'product_detail' product.id %}" class="btn-outline-secondary rounded p-2">Doesn't exist</a>
                                             {% endif %}
                                         </div>
                                     </div>

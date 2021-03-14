@@ -1,0 +1,59 @@
+{% extends "base/base.html" %}
+{% block title %} user address list {% endblock %}
+{% block content %}
+    <div class="container d-flex mt-2 mb-2 h-100">
+        <div class="col-9 row w-100">
+            <table class="table" style="border-radius: 20px">
+                <thead class="bg-info text-white">
+                    <tr>
+                        <th scope="col">Address</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="table-warning">
+                    {% for address in addresses %}
+                        <tr>
+                            <th scope="row"><a href="{% url "address_detail" address.id  %}">{{ address.full_address }}</a></th>
+                            {% if address.status %}
+                                <td>Active</td>
+                            {% else %}
+                                <td>Deactive</td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <hr>
+            <div class="mb-3 container bg-light border border-warning rounded">
+                <div style="width: fit-content; float: right;">
+                    <p class="text-secondary text-center mr-4 border-primary border-bottom" style="font-size: x-large;">Add Address</p>
+                </div><br>
+                <form method="post" action="{% url "address" %}" class="d-flex flex-column justify-content-center align-items-center rounded" style="margin-right: 20%;">
+                    {% csrf_token %}
+                    <label for="zip_code" class="text-primary">ZipCode:</label>
+                    <input type="text" id="zip_code" name="zip_code">
+                    <label for="city" class="text-danger">City:</label>
+                    <input type="text" id="city" name="city">
+                    <label for="street" class="text-success">Street:</label>
+                    <textarea type="text" id="street" name="street"></textarea>
+                    <input type="submit" class="btn-outline-info rounded shadow mt-2 mb-3">
+                </form>
+            </div>
+        </div>
+        <div class="col-3 bg-info ml-3 text-center h-100 rounded" id="user_menu">
+            {% if user.image %}
+                <img src="{{ user.image.url }}" alt="user picture" style="width: 130px; height: 130px;" class="rounded-circle mt-3" id="added_image">
+            {% endif %}
+            <div class="rounded mt-4 mb-5 text-center shadow d-flex flex-column" style="background-color: lightgoldenrodyellow">
+                <a href="{% url "user-interests" %}" class="p-2 mt-2 btn-outline-primary border-0 ">Interests</a>
+                <a href="{% url "user_orders" %}" class="p-2 mt-2 btn-outline-primary border-0 ">Orders</a>
+                {% if user.is_staff %}
+                    <a href="{% url "user_shop_page" shop_name %}" class="p-2 mt-2 btn-outline-primary border-0 ">Shop</a>
+                {% endif %}
+                <a href="{% url "address" %}" class="p-2 mt-2 btn-outline-primary border-0 ">Addresses</a>
+                <a href="{% url "profile" user.id %}" class="p-2 mt-2 btn-outline-primary border-0 ">Information</a>
+                <a href="{% url "logout" %}" class="p-2 mt-2 mb-2 btn-outline-primary border-0 ">Logout</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

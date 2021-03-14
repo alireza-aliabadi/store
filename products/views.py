@@ -57,9 +57,11 @@ class CategoryDetail(JSONResponseMixin, AjaxResponseMixin, DetailView):
         context['accessories'] = Category.objects.filter(Q(parent__name='accessory'))
         basket_items = []
         if user.is_authenticated:
-            basket = Basket.objects.get(user=user)
-            if basket:
+            try:
+                basket = Basket.objects.get(user=user)
                 basket_items = basket.basket_items.all()
+            except Basket.DoesNotExist:
+                basket_items = None
         else:
             redirect('login')
         context['basket_items'] = basket_items
@@ -138,9 +140,11 @@ class ProductDetail(DetailView):
         context['comments'] = self.get_object().product_comment.all()
         basket_items = []
         if user.is_authenticated:
-            basket = Basket.objects.get(user=user)
-            if basket:
+            try:
+                basket = Basket.objects.get(user=user)
                 basket_items = basket.basket_items.all()
+            except Basket.DoesNotExist:
+                basket_items = None
         else:
             redirect('login')
         context['basket_items'] = basket_items
@@ -158,12 +162,14 @@ def like_product(request):
         product = Product.objects.get(id=data['productid'])
     except Product.DoesNotExist:
         return HttpResponse('product doesn\'t exist', status=404)
-    try:
-        product_like = Likes.objects.get(user=user, product=product)
-        product_like.status = data['status']
-        product_like.save()
-    except Likes.DoesNotExist:
-        Likes.objects.create(user=user, product=product, status=data['status'])
+    if data['status']:
+        try:
+            Likes.objects.get(user=user, product=product)
+        except Likes.DoesNotExist:
+            Likes.objects.create(user=user, product=product, status=data['status'])
+    else:
+        user_like = Likes.objects.get(user=user, product=product)
+        user_like.delete()
     response = {'like_counter': product.like_count}
     return HttpResponse(json.dumps(response), status=201)
 
@@ -246,9 +252,11 @@ class ProductList(AjaxResponseMixin, JSONResponseMixin, ListView):
         context['brands'] = Brand.objects.all()
         basket_items = []
         if user.is_authenticated:
-            basket = Basket.objects.get(user=user)
-            if basket:
+            try:
+                basket = Basket.objects.get(user=user)
                 basket_items = basket.basket_items.all()
+            except Basket.DoesNotExist:
+                basket_items = None
         else:
             redirect('login')
         context['basket_items'] = basket_items

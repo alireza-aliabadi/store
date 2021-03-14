@@ -22,9 +22,13 @@
         <div class="row rounded bg-light" style="padding: 7px 7px 0 7px;">
                 <div class="col-4 shadow h-50 mt-5" style="background-color: lightblue; border-radius: 10px;">
                     <div class="mt-2 text-dark pb-2 font-weight-bold">
-                        <a href="{% url "user_shop_page" min_shop.shop %}" class="border-0 bg-transparent">{{ min_shop.shop }}</a>
-                        <hr>
-                        {{ min_shop.price }}
+                        {% if min_shop %}
+                            <a href="{% url "user_shop_page" min_shop.shop %}" class="border-0 bg-transparent">{{ min_shop.shop }}</a>
+                            <hr>
+                            {{ min_shop.price }}
+                        {% else %}
+                            <p>___</p>
+                        {% endif %}
                     </div>
                     {% if min_shop %}
                         <form method="post" action="{% url "basket" %}">
@@ -90,6 +94,64 @@
                 </div>
             {% endif %}
         <div class="row mt-5 rounded shadow bg-white" style="padding: 7px;">
+            <div class="col-12">Description<hr></div>
+            <div class="col-12">{{ product.details }}</div>
+        </div>
+        <div class="row mt-5 rounded mb-3 shadow bg-white" style="padding: 7px;">
+            <div class="col-12">Gallery<hr></div>
+            <div class="owl-carousel owl-theme mb-3">
+                {% for field in gallery %}
+                    <div class="ml-2 mr-2">
+                        <div class="card shadow rounded">
+                            <img src="{{ field.image.url }}" alt="" class="card-img-top">
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="row mt-5 rounded shadow bg-white" style="padding: 7px;">
+            <div class="col-12">Comments<hr></div>
+            <div class="col-12">
+                <label for="comment_text">CommentText:</label><br>
+                <textarea type="text" id="comment_text" cols="60" rows="3" placeholder="Enter your comment" class="rounded border-danger shadow"></textarea><br>
+                <form action="" method="post" id="{{ product.id }}">
+                    {% csrf_token %}
+                    <span id="first" class="fa fa-star border-0 bg-transparent p-0"></span>
+                    <span id="second" class="fa fa-star border-0 bg-transparent p-0"></span>
+                    <span id="third" class="fa fa-star border-0 bg-transparent p-0"></span>
+                    <span id="fourth" class="fa fa-star border-0 bg-transparent p-0"></span>
+                    <span id="fifth" class="fa fa-star border-0 bg-transparent p-0"></span>
+                </form>
+                <button class="btn-outline-info rounded border-0" onclick="add_comment({{ product.id }}, $(`#comment_text`).val(), +i)">send</button>
+                <hr style="background-color: blueviolet">
+                <span id="product_comments">
+                    {% if comments %}
+                        {% for comment in comments %}
+                            <span class="font-weight-bold">{{ comment.user.full_name }}: </span>
+                            <span >
+                                {% for s in "abcde" %}
+                                    {% if forloop.counter <= comment.rate %}
+                                        <span id="rate1{{ forloop.counter }}" class="fa fa-star checked"></span>
+                                    {% else %}
+                                        <span id="rate1{{ forloop.counter }}" class="fa fa-star "></span>
+                                    {% endif %}
+                                {% endfor %}
+        {#                        <span id="rate2{{ forloop.counter }}" class="fa fa-star"></span>#}
+        {#                        <span id="rate3{{ forloop.counter }}" class="fa fa-star"></span>#}
+        {#                        <span id="rate4{{ forloop.counter }}" class="fa fa-star"></span>#}
+        {#                        <span id="rate5{{ forloop.counter }}" class="fa fa-star"></span>#}
+                                {{ comment.rate }}
+                            </span>
+                            <script>rating({{ forloop.counter }},{{ comment.rate }})</script>
+                            <span class=""><br>{{ comment.text }}<br></span>
+                        {% endfor %}
+                    {% else %}
+                        <p>No comment added yet</p>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        <div class="row mt-5 mb-3 rounded shadow bg-white" style="padding: 7px;">
             <div class="col-12">related products<hr></div>
 {#            <div class="col-12 d-flex justify-content-center">#}
 {#                {% for prdct in related_product %}#}
@@ -113,66 +175,12 @@
                                     <a href="{% url 'product_detail' related.id %}" class="btn-outline-primary rounded p-2">View</a>
                                 {% else %}
                                     <h5>-</h5>
-                                    <a href="" class="btn-outline-secondary rounded p-2">Doesn't exist</a>
+                                    <a href="{% url 'product_detail' related.id %}" class="btn-outline-secondary rounded p-2">Doesn't exist</a>
                                 {% endif %}
                             </div>
                         </div>
                     </div>
                 {% endfor %}
-            </div>
-        </div>
-        <div class="row mt-5 rounded shadow bg-white" style="padding: 7px;">
-            <div class="col-12">Description<hr></div>
-            <div class="col-12">{{ product.details }}</div>
-        </div>
-        <div class="row mt-5 rounded mb-3 shadow bg-white" style="padding: 7px;">
-            <div class="col-12">Gallery<hr></div>
-            <div class="owl-carousel owl-theme mb-3">
-                {% for field in gallery %}
-                    <div class="ml-2 mr-2">
-                        <div class="card shadow rounded">
-                            <img src="{{ field.image.url }}" alt="" class="card-img-top">
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-        <div class="row mt-5 rounded mb-3 shadow bg-white" style="padding: 7px;">
-            <div class="col-12">Comments<hr></div>
-            <div class="col-12">
-                <label for="comment_text">CommentText:</label><br>
-                <textarea type="text" id="comment_text" cols="60" rows="3" placeholder="Enter your comment" class="rounded border-danger shadow"></textarea><br>
-                <form action="" method="post" id="{{ product.id }}">
-                    {% csrf_token %}
-                    <span id="first" class="fa fa-star border-0 bg-transparent p-0"></span>
-                    <span id="second" class="fa fa-star border-0 bg-transparent p-0"></span>
-                    <span id="third" class="fa fa-star border-0 bg-transparent p-0"></span>
-                    <span id="fourth" class="fa fa-star border-0 bg-transparent p-0"></span>
-                    <span id="fifth" class="fa fa-star border-0 bg-transparent p-0"></span>
-                </form>
-                <button class="btn-outline-info rounded border-0" onclick="add_comment({{ product.id }}, $(`#comment_text`).val(), +i)">send</button>
-                <hr style="background-color: blueviolet">
-                <span id="product_comments">
-                    {% for comment in comments %}
-                        <span class="font-weight-bold">{{ comment.user.full_name }}: </span>
-                        <span >
-                            {% for s in "abcde" %}
-                                {% if forloop.counter <= comment.rate %}
-                                    <span id="rate1{{ forloop.counter }}" class="fa fa-star checked"></span>
-                                {% else %}
-                                    <span id="rate1{{ forloop.counter }}" class="fa fa-star "></span>
-                                {% endif %}
-                            {% endfor %}
-    {#                        <span id="rate2{{ forloop.counter }}" class="fa fa-star"></span>#}
-    {#                        <span id="rate3{{ forloop.counter }}" class="fa fa-star"></span>#}
-    {#                        <span id="rate4{{ forloop.counter }}" class="fa fa-star"></span>#}
-    {#                        <span id="rate5{{ forloop.counter }}" class="fa fa-star"></span>#}
-                            {{ comment.rate }}
-                        </span>
-                        <script>rating({{ forloop.counter }},{{ comment.rate }})</script>
-                        <span class=""><br>{{ comment.text }}<br></span>
-                    {% endfor %}
-                </span>
             </div>
         </div>
     </div>

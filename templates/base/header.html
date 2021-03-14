@@ -94,10 +94,10 @@
             <div class="attr-nav">
                 <ul>
                     <li class="search"><a href="#"><i class="fa fa-search"></i></a></li>
-                    <li class="side-menu">
+                    <li class="side-menu" id="side_menu">
                         <a href="{% url 'basket' %}">
                             <i class="fa fa-shopping-bag"></i>
-{#                          <span class="badge">3</span>#}
+                            <span class="badge">{{ basket_items.count }}</span>
                         </a>
                     </li>
                 </ul>
@@ -108,20 +108,25 @@
         <div class="side">
             <a href="#" class="close-side"><i class="fa fa-times"></i></a>
             {% if user.is_authenticated %}
-                <li class="cart-box">
-                    <ul class="cart-list">
-                        {% for item in basket_items %}
-                            <li>
-                                <a href="#" class="photo"><img src="{{ item.product.image.url }}" class="cart-thumb" alt="" /></a>
-                                <h6><a href="#">{{ item.product.name }}</a></h6>
-                                <p>{{ item.quantity }}x - <span class="price">{{ item.shop_product.price }}</span></p>
+                {% if basket_items %}
+                    <li class="cart-box">
+                        <ul class="cart-list">
+                            {% for item in basket_items %}
+                                <li>
+                                    <a href="#" class="photo"><img src="{{ item.product.image.url }}" class="cart-thumb" alt="" /></a>
+                                    <h6><a href="#">{{ item.product.name }}</a></h6>
+                                    <p>{{ item.quantity }}x - <span class="price">{{ item.shop_product.price }}</span></p>
+                                </li>
+                            {% endfor %}
+                            <li class="total">
+                                <a href="{% url 'basket' %}" class="btn btn-default hvr-hover btn-cart">VIEW CART</a>
                             </li>
-                        {% endfor %}
-                        <li class="total">
-                            <a href="{% url 'basket' %}" class="btn btn-default hvr-hover btn-cart">VIEW CART</a>
-                        </li>
-                    </ul>
-                </li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <p class="font-weight-bold text-white mt-5">basket doesn't exist</p>
+                    <p class="font-weight-bold text-white mt-5">please add some stuff</p>
+                {% endif %}
             {% else %}
                 <p class="font-weight-bold text-white mt-5">please login first</p>
             {% endif %}

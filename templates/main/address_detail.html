@@ -4,13 +4,11 @@
 {% block title %} User-Address {% endblock %}
 {% block content %}
     <div class="container bg-light rounded shadow border border-primary mt-3 mb-3">
-        <a href="{% url "profile" user.id %}" class="btn-info p-2 rounded">Back to Information</a>
         <div style="width: fit-content; float: right;">
             <p class="text-danger text-center mr-4 mt-2 border-primary border-bottom" style="font-size: x-large;">Manage Address</p>
         </div><br>
-        {% for  address in addresses %}
             <div id = "form{{ address.id }}" class="mt-3 mb-3 pt-2 d-flex flex-column justify-content-center align-items-center" style="margin-right: 20%;">
-                <form method="post" action="{% url "address" %}" class="d-flex flex-column justify-content-center align-items-center">
+                <form method="post" action="{% url "address_detail" address.id %}" class="d-flex flex-column justify-content-center align-items-center">
                     {% csrf_token %}
     {#                {{ form.non_field_errors }}#}
     {#                <div class="form-group mt-3">#}
@@ -52,23 +50,6 @@
                 </form>
                 <button class="btn-outline-danger rounded shadow" onclick="delete_address({{ address.id }})">Delete</button>
             </div>
-        {% endfor %}
-        <div class="mb-3 container">
-            <hr>
-            <div style="width: fit-content; float: right;">
-                <p class="text-danger text-center mr-4 border-primary border-bottom" style="font-size: x-large;">Add Address</p>
-            </div><br>
-            <form method="post" action="{% url "address" %}" class="d-flex flex-column justify-content-center align-items-center" style="margin-right: 20%;">
-                {% csrf_token %}
-                <label for="zip_code">ZipCode:</label>
-                <input type="text" id="zip_code" name="zip_code">
-                <label for="city">City:</label>
-                <input type="text" id="city" name="city">
-                <label for="street">Street:</label>
-                <textarea type="text" id="street" name="street"></textarea>
-                <input type="submit" class="btn-outline-info rounded shadow mt-2 mb-3">
-            </form>
-        </div>
     </div>
 {% endblock %}
 {% block script %}
@@ -92,6 +73,8 @@
                     resp = JSON.parse(response)
                     if (resp['result'] === 'true'){
                         $(`#form${address_id}`).remove()
+                        alert("successfully deleted")
+                        window.location.href = "{% url "address" %}"
                     }
                 }
             })

@@ -26,9 +26,11 @@ class MainPage(TemplateView):
         user = self.request.user
         basket_items = []
         if user.is_authenticated:
-            basket = Basket.objects.get(user=user)
-            if basket:
+            try:
+                basket = Basket.objects.get(user=user)
                 basket_items = basket.basket_items.all()
+            except Basket.DoesNotExist:
+                basket_items = None
         else:
             redirect('login')
         context['basket_items'] = basket_items

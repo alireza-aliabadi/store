@@ -91,9 +91,11 @@ class Profile(LoginRequiredMixin, UpdateView):
             context['shop_name'] = shop.name
         basket_items = []
         if user.is_authenticated:
-            basket = Basket.objects.get(user=user)
-            if basket:
+            try:
+                basket = Basket.objects.get(user=user)
                 basket_items = basket.basket_items.all()
+            except Basket.DoesNotExist:
+                basket_items = None
         else:
             redirect('login')
         context['basket_items'] = basket_items
@@ -130,10 +132,10 @@ def change_image(request):
     return HttpResponse(json.dumps({"image": "image url"}), status=400)
 
 
-class AddressUpdate(LoginRequiredMixin, FormView):
-    permission_denied_message = "logging first"
+class AddressDetail(LoginRequiredMixin, FormView):
+    permission_denied_message = "login first"
     model = Address
-    template_name = "main/address.html"
+    template_name = 'main/address_detail.html'
     form_class = AddressForm
 
     def get_context_data(self, **kwargs):
@@ -141,12 +143,65 @@ class AddressUpdate(LoginRequiredMixin, FormView):
         context = super().get_context_data()
         context['cloth'] = Category.objects.filter(Q(parent__name='clothes'))
         context['accessories'] = Category.objects.filter(Q(parent__name='accessory'))
-        context['addresses'] = Address.objects.filter(user=user)
+        # address_id = self.request.GET.get('pk')
+        address_id = self.kwargs['pk']
+        address = Address.objects.get(id=int(address_id))
+        context['address'] = address
         basket_items = []
         if user.is_authenticated:
-            basket = Basket.objects.get(user=user)
-            if basket:
+            try:
+                basket = Basket.objects.get(user=user)
                 basket_items = basket.basket_items.all()
+            except Basket.DoesNotExist:
+                basket_items = None
+        else:
+            redirect('login')
+        context['basket_items'] = basket_items
+        return context
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data()
+        form = AddressForm(request.POST)
+        address = context['address']
+        print(address)
+        if form.is_valid():
+            # form.instance = address
+            # form.save()
+            print('inside update')
+            address.city = form.cleaned_data['city']
+            address.street = form.cleaned_data['street']
+            address.zip_code = form.cleaned_data['zip_code']
+            if request.POST.get('checkbox') == 'true':
+                address.status = True
+            elif request.POST.get('checkbox') == 'false':
+                address.status = False
+            else:
+                pass
+            print(address.status)
+            address.save()
+            return redirect('address')
+        context['form'] = form
+        return render(request, "main/address_detail.html", context)
+
+
+class AddressUpdate(LoginRequiredMixin, FormView):
+    permission_denied_message = "login first"
+    model = Address
+    template_name = "main/address_list.html"
+    form_class = AddressForm
+
+    def get_context_data(self, **kwargs):
+        user = self.request.user
+        context = super().get_context_data()
+        context['cloth'] = Category.objects.filter(Q(parent__name='clothes'))
+        context['accessories'] = Category.objects.filter(Q(parent__name='accessory'))
+        basket_items = []
+        if user.is_authenticated:
+            try:
+                basket = Basket.objects.get(user=user)
+                basket_items = basket.basket_items.all()
+            except Basket.DoesNotExist:
+                basket_items = None
         else:
             redirect('login')
         context['basket_items'] = basket_items
@@ -154,38 +209,23 @@ class AddressUpdate(LoginRequiredMixin, FormView):
 
     def post(self, request, *args, **kwargs):
         user = request.user
+        context = self.get_context_data()
         form = AddressForm(request.POST)
-        put = request.POST.get('method')
-        if put:
-            print('inside put')
-            address_id = request.POST.get('address_id')
-            print(address_id, type(address_id))
-            address = Address.objects.get(id=int(address_id))
-            print(address)
-            if form.is_valid():
-                # form.instance = address
-                # form.save()
-                print('inside update')
-                address.city = form.cleaned_data['city']
-                address.street = form.cleaned_data['street']
-                address.zip_code = form.cleaned_data['zip_code']
-                if request.POST.get('checkbox') == 'true':
-                    address.status = True
-                elif request.POST.get('checkbox') == 'false':
-                    address.status = False
-                else:
-                    pass
-                print(address.status)
-                address.save()
-                return redirect('address')
         if form.is_valid():
             city = form.cleaned_data['city']
             street = form.cleaned_data['street']
             zip_code = form.cleaned_data['zip_code']
             Address.objects.create(user=user, city=city, street=street, zip_code=zip_code)
             return redirect('address')
-        context = {'form': form}
-        return render(request, "main/address.html", context)
+        context['form'] = form
+        return render(request, "main/address_list.html", context)
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        context = self.get_context_data()
+        context['shop_name'] = Shop.objects.get(user=user).name
+        context['addresses'] = Address.objects.filter(user=user)
+        return render(request, "main/address_list.html", context)
 
 
 @login_required
@@ -238,9 +278,11 @@ class UserShopPage(LoginRequiredMixin, JSONResponseMixin, AjaxResponseMixin, Lis
         context['accessories'] = Category.objects.filter(Q(parent__name='accessory'))
         basket_items = []
         if user.is_authenticated:
-            basket = Basket.objects.get(user=user)
-            if basket:
+            try:
+                basket = Basket.objects.get(user=user)
                 basket_items = basket.basket_items.all()
+            except Basket.DoesNotExist:
+                basket_items = None
         else:
             redirect('login')
         context['basket_items'] = basket_items
@@ -352,9 +394,11 @@ class Interests(LoginRequiredMixin, ListView):
         context['accessories'] = Category.objects.filter(Q(parent__name='accessory'))
         basket_items = []
         if user.is_authenticated:
-            basket = Basket.objects.get(user=user)
-            if basket:
+            try:
+                basket = Basket.objects.get(user=user)
                 basket_items = basket.basket_items.all()
+            except Basket.DoesNotExist:
+                basket_items = None
         else:
             redirect('login')
         context['basket_items'] = basket_items
@@ -368,9 +412,9 @@ def delete_interest(request):
     user = request.user
     try:
         Likes.objects.filter(product=product, user=user).delete()
-        message = "basket item successfully deleted"
+        message = "successfully removed from interests"
     except:
-        message = "couldn't delete basket item"
+        message = "couldn't found interested product"
         return HttpResponse("some error happened", status=500)
 
     return HttpResponse(json.dumps({'mssg': message}), status=201)
@@ -402,9 +446,11 @@ class UserOrders(LoginRequiredMixin, ListView):
         context['accessories'] = Category.objects.filter(Q(parent__name='accessory'))
         basket_items = []
         if user.is_authenticated:
-            basket = Basket.objects.get(user=user)
-            if basket:
+            try:
+                basket = Basket.objects.get(user=user)
                 basket_items = basket.basket_items.all()
+            except Basket.DoesNotExist:
+                basket_items = None
         else:
             redirect('login')
         context['basket_items'] = basket_items
