@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'orders',
     'products',
     'storeview',
-    'mptt',
     'mathfilters',
     'django_filters'
 ]
