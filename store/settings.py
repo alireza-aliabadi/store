@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'products',
     'storeview',
     'mathfilters',
-    'django_filters'
 ]
 
 MIDDLEWARE = [
