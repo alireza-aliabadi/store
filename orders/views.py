@@ -95,14 +95,20 @@ class BasketView(LoginRequiredMixin, View):
 @csrf_exempt
 def delete_basket(request):
     data = json.loads(request.body)
+    print(data)
     try:
-        BasketItem.objects.filter(id=data['basket_id']).delete()
+        basket_item = BasketItem.objects.get(id=int(data['basket_id']))
+        print('basket-item', basket_item)
+        pre_price = basket_item.shop_product.price * basket_item.quantity
+        print('pre-price', pre_price)
+        basket_item.delete()
+        total_price = data['total_price'] - pre_price
+        print('total-price', total_price)
         message = "basket item successfully deleted"
-    except:
-        message = "couldn't delete basket item"
+    except BasketItem.DoesNotExist:
         return HttpResponse("some error happened", status=500)
 
-    return HttpResponse(json.dumps({'mssg': message}), status=201)
+    return HttpResponse(json.dumps({'mssg': message, 'total_price': total_price}), status=201)
 
 
 @csrf_exempt
@@ -142,10 +148,14 @@ class OrderView(LoginRequiredMixin, View):
                 order_item.update(count=item.quantity, price=item.shop_product.price)
         order_list = order.order_items.all()
         basket.delete()
-        address = Address.objects.filter(user=user, status=True)[0]
-        context = {'order_list': order_list, 'total_price': total_price, 'address': address.full_address,
+        address_list = Address.objects.filter(user=user, status=True)
+        context = {'order_list': order_list, 'total_price': total_price,
                    'order': order, 'cloth': Category.objects.filter(Q(parent__name='clothes')),
                    'accessories': Category.objects.filter(Q(parent__name='accessory'))}
+        if address_list:
+            context['address'] = address_list[0]
+        else:
+            context['address'] = "!!!no address found \n please check addresses in profile"
         return render(self.request, "main/order.html", context)
 
     def get(self, *args, **kwargs):

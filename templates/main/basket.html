@@ -46,7 +46,7 @@
                                             <p id="item_total_price1{{ basket_item.id }}">{{ basket_item.shop_product.price | mul:basket_item.quantity }}</p>
                                         </td>
                                         <td class="remove-pr">
-                                            <a href="#" onclick="delete_item({{ basket_item.id }})">
+                                            <a href="#" onclick="delete_item({{ basket_item.id }}, {{ total_price }})">
                                                 <i class="fas fa-times"></i>
                                             </a>
                                         </td>
@@ -74,7 +74,7 @@
                         <div class="d-flex">
                             <h4>Sub Total</h4>
                             {% for basket_item in basket_items%}
-                                <div id="item_total_price2{{ basket_item.id }}" class="ml-auto font-weight-bold">{{ basket_item.shop_product.price | mul:basket_item.quantity }}</div>
+                                <div id="item_total_price2{{ basket_item.id }}" class="ml-auto font-weight-bold d-flex justify-content-center align-items-center">{{ basket_item.shop_product.price | mul:basket_item.quantity }}</div>
                             {% endfor %}
                         </div>
                         <div class="d-flex">
@@ -91,7 +91,7 @@
                 <div class="col-12 d-flex shopping-box justify-content-end">
                     <form method="post" action="{% url "order" %}">
                         {% csrf_token %}
-                        <input type="hidden" value="{{ total_price }}" name="total_price">
+                        <input type="hidden" value="{{ total_price }}" name="total_price" id="checkout_total_price">
                         <input type="submit" class="ml-auto btn hvr-hover rounded text-white" value="Checkout">
                     </form>
                 </div>
@@ -101,16 +101,23 @@
 {% endblock %}
 {% block script %}
     <script>
-        function delete_item(basketid){
-            let data = JSON.stringify({'basket_id': basketid})
+        function delete_item(basketid, total_price){
+            let data = JSON.stringify({'basket_id': basketid, 'total_price': total_price})
+            console.log('first data', data)
             $.ajax({
                 type: "post",
                 url:"{% url "delete_basket" %}",
                 data: data,
                 success: (response)=>{
-                    mssg = JSON.parse(response)
+                    data = JSON.parse(response)
+                    console.log('result', data)
+                    mssg = data.mssg
+                    resp_total_price = data.total_price
                     $(`#basket_item`).remove()
-                    alert(mssg['mssg'])
+                    $(`#item_total_price2${basketid}`).remove()
+                    $(`#total_price`).text(resp_total_price)
+                    $(`#checkout_total_price`).val(resp_total_price)
+                    alert(mssg)
                 }
             })
         }

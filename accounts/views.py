@@ -165,7 +165,7 @@ class AddressDetail(LoginRequiredMixin, FormView):
         address = context['address']
         print(address)
         if form.is_valid():
-            # form.instance = address
+            # form.instance = addressf
             # form.save()
             print('inside update')
             address.city = form.cleaned_data['city']
